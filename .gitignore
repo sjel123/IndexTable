@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-[Dd]ata
 .Rproj
 _cache
 _files
@@ -10,4 +9,5 @@ _files
 .md
 RNASeqQC2
 PPT
+.Rproj
 ~

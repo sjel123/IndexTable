@@ -7,7 +7,7 @@ source("./Factor.R")
 ################################################
 #Load Data.  This is run only once when the server.R is called
 
-load("./Data/Metadev.Rdata")
+load("../Data/Metadev.Rdata")
     #Rename colnames to separate Yogeshwars analysis from Matts AD analysis
     names(Meta) <- gsub("AD_LS", "ADy_LS", names(Meta))
     names(Meta) <- gsub("AD_NL", "ADy_NL", names(Meta))
@@ -15,7 +15,7 @@ load("./Data/Metadev.Rdata")
     res <- Meta[,c(1,42:47)]
     
 #Load Data for individual Studies
-load("./Data/IndivAT.RData") #(Loads Data2 dataframe)
+load("../Data/IndivAT.RData") #(Loads Data2 dataframe)
       
 ##End Load Data  
 ##################################################
