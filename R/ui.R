@@ -1,3 +1,5 @@
+#Updated 12/10/2019
+
 library(shiny)
 library(DT) 
 library(plotly)
@@ -61,14 +63,14 @@ sidebarLayout(
              fluidRow(column (6, DT::dataTableOutput('x2'),  hr(),fluid=FALSE)),
              fluidRow(
                column(6, h3("Expression"),
-                      plotOutput("main_plot",  height = "600px")),
+                      plotOutput("main_plot1",  height = "400px")),
               column(6, h3("Disease"),
                      selectInput('show_vars3', 'Disease Comparison:', choices=NULL),
                       plotlyOutput("main_plot2",  height = "600px"))
              ),#End Fluid Row
              fluidRow(
                column(6, h3("Expression"),
-                      plotOutput("main_plot1",  height = "400px"))
+                      plotOutput("main_plot",  height = "600px"))
              )#End Fluid Row
     ),#End TabPanel
 
