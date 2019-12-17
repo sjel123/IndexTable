@@ -2,21 +2,19 @@
 library(shiny)
 library(DT)   
 library(ggplot2)
-library(plotly)
 source("./Factor.R")
 ################################################
 #Load Data.  This is run only once when the server.R is called
 
-load("../Data/Metadev.Rdata")
-    #Rename colnames to separate Yogeshwars analysis from Matts AD analysis
-    names(Meta) <- gsub("AD_LS", "ADy_LS", names(Meta))
-    names(Meta) <- gsub("AD_NL", "ADy_NL", names(Meta))
-                        #Create table of results 
-    res <- Meta[,c(1,42:47)]
-    
-#Load Data for individual Studies
-load("../Data/IndivAT.RData") #(Loads Data2 dataframe)
-      
+load("./Data/Meta.Rdata")
+        
+#Create table of results 
+res <- Meta[,c(1,36:41)]
+index <- grep("FDR", names(Meta))
+Meta[,index]<- signif(Meta[index],2)
+index <- grep("effectSize$|FC", names(Meta))
+Meta[,index]<- round(Meta[index],2)
+
 ##End Load Data  
 ##################################################
 
@@ -36,29 +34,19 @@ shinyServer <- function(input, output, session) {
     updateCheckboxGroupInput(session, "show_vars1",
                              label = "Select Columns to Include",
                              choices = choices2,
-                             selected = c("FC", "Pval","gene", "TF", "maxExpr", "Limmaanova","FC", "Pval","TF" ), 
-                             inline = TRUE)
-  })
-  observe({
-    choices2 <-  c("gene", "UC", "CD", "RA", "Pso", "NASH", "NAFLD", "AD", "ADy", "SLE", "FC", "Pval","TF")
-    updateCheckboxGroupInput(session, "show_vars2",
-                             label = "Select Columns to Include",
-                             choices = choices2,
-                             selected = c("FC", "Pval","gene", "TF"                             
+                             selected = c("FC", "Pval","gene", "TF", "maxExpr", "Limmaanova"                             
                              ) , 
                              inline = TRUE)
   })
-  
   observe({
-    choices2 <-  names(Meta)[grep("FDR", names(Meta))]
-      choices2 <- gsub("_effectSizeFDR", '', choices2)
-      updateSelectInput(session, "show_vars3",
-                             label = "Select Disease Comparison",
+    choices2 <-  c("gene", "UC", "CD", "RA", "Pso", "NASH", "NAFLD", "AD", "SLE", "FC", "Pval", "TF")
+    updateCheckboxGroupInput(session, "show_vars2",
+                             label = "Select Columns to Include",
                              choices = choices2,
-                             selected = c("UC_colon"                             
-                             )) 
-                        })
-  
+                             selected = c("gene", "FC", "Pval","gene", "TF", "maxExpr", "Limmaanova"                             
+                             ) , 
+                             inline = TRUE)
+  })
   #Used to remove columns rows from data table() based on categories selected 
   #from show_vars1 checkbox on client
   Names <- reactive({
@@ -68,13 +56,8 @@ shinyServer <- function(input, output, session) {
   
   Names2 <- reactive({
     NameLabels <- (input$'show_vars2')
-      matches <-  grep(paste(NameLabels,collapse="|"), 
-                            colnames(Meta), value=TRUE)
-    matches
-  }) 
-  Disease <- reactive({
-    Dise<- input$'show_vars3'
-    Dise
+      Match <- grep(paste(NameLabels, collapse="|"),colnames(Meta), value=TRUE) 
+      Match
   }) 
   
   ##Used to select rows based on slider inputs
@@ -98,27 +81,23 @@ shinyServer <- function(input, output, session) {
   
   #  if (input$go=="PullDown"){
   #  Make Datatable a reactive input  
+  DataForTable <- reactive({
+    Meta[,Names()]
+  })
   DataForTable2 <- reactive({
     Meta[,Names2()]
   })
-  #For Individual Study Tab
-  DataForTable <- reactive({
-    index <- grep("gene|ADy", names(Meta))
-    Meta[,index]
-  })
   
   #Set DataTable options
-  #For Individual Study Tab
   output$x1 = DT::renderDataTable(DataForTable(), server = T, escape=T, selection = 'single', options=list(
     lengthMenu = list(c(5, 10, 15, -1), c('5', '10', '15', 'All'))))
-  #For Graph Tab
+  
   output$x2 = DT::renderDataTable(DataForTable2(), server = T, escape=T, selection = 'single', options=list(
-    lengthMenu = list(c(5, 10, 15, -1), c('5', '10', '15', 'All')))) 
- 
-   #For Individual Study Tab
+    lengthMenu = list(c(5, 10, 15, -1), c('5', '10', '15', 'All'))))
+  
   SW <- reactive({ 
     s = NULL
-    s = as.numeric(rownames(DataForTable()[,]))[input$x1_rows_selected]
+    s = as.numeric(rownames(DataForTable()[RowValue(),]))[input$x1_rows_selected]
     print(sprintf("Names() %s", Names()))
     print(sprintf("input$x1_rows_selected %s", input$x1_rows_selected))
     if (is.null(s)) s=2  
@@ -127,15 +106,13 @@ shinyServer <- function(input, output, session) {
     
     s
   })
-  
-  #For graph Tab
   SW2 <- reactive({ 
     s = NULL
-    s = as.numeric(rownames(DataForTable2()[RowValue(),]))[input$x2_rows_selected]
+    s = as.numeric(rownames(DataForTable()[RowValue(),]))[input$x2_rows_selected]
     print(sprintf("Names() %s", Names()))
     print(sprintf("input$x2_rows_selected %s", input$x2_rows_selected))
-    if (is.null(s)) s=24769  
-    if (length(s)==0) s=24769 
+    if (is.null(s)) s=2  
+    if (length(s)==0) s=2 
     print(sprintf("row selected %s", s))
     
     s
@@ -145,46 +122,21 @@ shinyServer <- function(input, output, session) {
   
   
   output$main_plot <-  renderPlot({
-    generow <- as.numeric(SW2())
-    generow1 <- which(generow==as.numeric(row.names(Meta)))
+    generow <- as.numeric(SW())
+    generow1 <- which(generow==as.numeric(row.names(res)))
     print(sprintf("main plot SW() %s", generow))
     # print(sprintf("mydata1 %s", mydata1))
-    print(PlotFunction(num = generow1, meta = Meta)[[1]])
+    print(PlotFunction(num = generow1, meta = Meta))
     print("Complete1")
-  })
-  output$main_plot1 <-  renderPlot({
-    generow <- as.numeric(SW2())
-    generow1 <- which(generow==as.numeric(row.names(Meta)))
-    print(sprintf("main plot SW() %s", generow))
-    # print(sprintf("mydata1 %s", mydata1))
-    print(PlotFunction(num = generow1, meta = Meta)[[2]])
-    print("Complete1")
-  })
-    
-  output$main_plot2 <-  renderPlotly({
-      index2 <- grep(Disease(), names(Meta))
-        Data1 <- Meta[,c(1, index2)] 
-          highlight.gene <- Meta[SW2(),1]
-        Color <-(ifelse(Data1$gene == Meta[SW2(),1], "red", "grey50"))
-        Size <-(ifelse(Data1$gene == Meta[SW2(),1], 3, 1))
-    #print(VolcanoPlot(Data=Data1, Disease=Disease()))
-    require(plotly)
-    colnames(Data1) <- c("Gene", "FC", "PVal")
-    p <- ggplot(Data1, aes(x=as.numeric(FC), y=-log10(PVal), label=Gene)) + geom_point(aes(color=Color, size=Size)) +
-      ggtitle(Disease())+
-      theme(legend.position="none")
-    print("Complete2")
-    ggplotly(p)
-    p
-    
   })
   
-  #For Individual Study Tab
-  output$main_plot3 <-  renderPlotly({
-    generow <- as.numeric(SW())
-    Gene <- Meta$gene[generow]
-    print(Gene)
-    print(IndPlotFunc(Gene=Gene, Data2=Data2, Meta=Meta))
-    
+  output$main_plot2 <-  renderPlot({
+    generow <- as.numeric(SW2())
+    generow1 <- which(generow==as.numeric(row.names(Meta)))
+    print(sprintf("main plot SW() %s", generow))
+    # print(sprintf("mydata1 %s", mydata1))
+    print(PlotFunction(num = generow1, meta = Meta))
+    print("Complete1")
   })
+  
 }
