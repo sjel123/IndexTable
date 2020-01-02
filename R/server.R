@@ -7,15 +7,17 @@ source("./Factor.R")
 ################################################
 #Load Data.  This is run only once when the server.R is called
 
-load("../Data/Metadev.Rdata")
-    #Rename colnames to separate Yogeshwars analysis from Matts AD analysis
-    names(Meta) <- gsub("AD_LS", "ADy_LS", names(Meta))
-    names(Meta) <- gsub("AD_NL", "ADy_NL", names(Meta))
-                        #Create table of results 
-    res <- Meta[,c(1,42:47)]
-    
+#load("../Data/Metadev.Rdata")
+load("/app/Shiny/IndexTable2/Data/MetaAnalysis2/Meta2_0.rds")
+Meta <- Meta1 
+
+
+#Create table of results 
+    res <- Meta#[,c(1,42:47)]
+    res[,2:length(res)] <- signif(res[,2:length(res)],2)
+    Meta[,2:length(Meta)] <- signif(Meta[,2:length(Meta)],2)  
 #Load Data for individual Studies
-load("../Data/IndivAT.RData") #(Loads Data2 dataframe)
+#load("../Data/IndivAT.RData") #(Loads Data2 dataframe)
       
 ##End Load Data  
 ##################################################
@@ -36,15 +38,15 @@ shinyServer <- function(input, output, session) {
     updateCheckboxGroupInput(session, "show_vars1",
                              label = "Select Columns to Include",
                              choices = choices2,
-                             selected = c("FC", "Pval","gene", "TF", "maxExpr", "Limmaanova","FC", "Pval","TF" ), 
+                             selected = c("FC", "Pval","gene", "TF", "maxExpr", "Limmaanova","effectSize", "FDR", "hetPval" ), 
                              inline = TRUE)
   })
   observe({
-    choices2 <-  c("gene", "UC", "CD", "RA", "Pso", "NASH", "NAFLD", "AD", "ADy", "SLE", "FC", "Pval","TF")
+    choices2 <-  c("gene", "uc_", "cd_", "ra_", "pso", "nash", "nafld", "ad_", "sle","effectSize", "FDR", "hetPval")
     updateCheckboxGroupInput(session, "show_vars2",
                              label = "Select Columns to Include",
                              choices = choices2,
-                             selected = c("FC", "Pval","gene", "TF"                             
+                             selected = c("ra_","gene"                            
                              ) , 
                              inline = TRUE)
   })
@@ -55,7 +57,7 @@ shinyServer <- function(input, output, session) {
       updateSelectInput(session, "show_vars3",
                              label = "Select Disease Comparison",
                              choices = choices2,
-                             selected = c("UC_colon"                             
+                             selected = c("ra_healthy_synovial"                             
                              )) 
                         })
   
@@ -81,7 +83,7 @@ shinyServer <- function(input, output, session) {
   ## Currently the only option is All
   ## This is useful to have a small number of default genes in the results table
   RowValue <- reactive({
-    Value <- as.numeric(row.names(unique(res[,Names()])))
+    Value <- as.numeric(row.names(res[,Names()]))
     if(input$action_selectiontype == "TWO") Value <- c(792, 796, 797, 798)#c(20990, 3385,7582, 10233,8432)
     Value
   })
@@ -131,14 +133,14 @@ shinyServer <- function(input, output, session) {
   #For graph Tab
   SW2 <- reactive({ 
     s = NULL
-    s = as.numeric(rownames(DataForTable2()[RowValue(),]))[input$x2_rows_selected]
+    s = input$x2_rows_selected
     print(sprintf("Names() %s", Names()))
     print(sprintf("input$x2_rows_selected %s", input$x2_rows_selected))
     if (is.null(s)) s=24769  
     if (length(s)==0) s=24769 
     print(sprintf("row selected %s", s))
     
-    s
+    s=input$x2_rows_selected
   })
   
   updateSelectInput(session, "protein", choices=res$gene_name[1:10], selected="MTOR")
@@ -149,7 +151,7 @@ shinyServer <- function(input, output, session) {
     generow1 <- which(generow==as.numeric(row.names(Meta)))
     print(sprintf("main plot SW() %s", generow))
     # print(sprintf("mydata1 %s", mydata1))
-    print(PlotFunction(num = generow1, meta = Meta)[[1]])
+    print(PlotFunction2(num = generow1, meta = Meta)[[1]])
     print("Complete1")
   })
   output$main_plot1 <-  renderPlot({
@@ -157,7 +159,7 @@ shinyServer <- function(input, output, session) {
     generow1 <- which(generow==as.numeric(row.names(Meta)))
     print(sprintf("main plot SW() %s", generow))
     # print(sprintf("mydata1 %s", mydata1))
-    print(PlotFunction(num = generow1, meta = Meta)[[2]])
+    print(PlotFunction2(num = generow1, meta = Meta)[[2]])
     print("Complete1")
   })
     
@@ -180,11 +182,5 @@ shinyServer <- function(input, output, session) {
   })
   
   #For Individual Study Tab
-  output$main_plot3 <-  renderPlotly({
-    generow <- as.numeric(SW())
-    Gene <- Meta$gene[generow]
-    print(Gene)
-    print(IndPlotFunc(Gene=Gene, Data2=Data2, Meta=Meta))
-    
-  })
+
 }

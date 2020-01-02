@@ -15,7 +15,7 @@ ui <- fluidPage(
    # tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
    # ),
 # header,
-  titlePanel("INflammation Disease EXpression Table Development Version"),
+  titlePanel("INflammation Disease EXpression Table Development Version 2.0 updated Jan 2020"),
 sidebarLayout(
   sidebarPanel(width=1,
     
@@ -53,7 +53,9 @@ sidebarLayout(
                       href="mailto:scott.jelinsky@pfizer.com")
              ),
              column(12, 
-                    h3("This is a beta version.  Expect major updates to the data and the site shortly"))
+                    h3("This is a beta version.  Expect major updates to the data and the site shortly")),
+             #Add PPT description of data
+             tags$iframe(style="height:400px; width:100%; scrolling=yes", src="meta-analysis_progress_20191120.pdf")           
     ),#End TabPanel
     tabPanel("Graphs",
              titlePanel("INflammation Disease EXpression Table"),
@@ -63,7 +65,7 @@ sidebarLayout(
              fluidRow(column (6, DT::dataTableOutput('x2'),  hr(),fluid=FALSE)),
              fluidRow(
                column(6, h3("Expression"),
-                      plotOutput("main_plot1",  height = "400px")),
+                      plotOutput("main_plot1",  height = "600px")),
               column(6, h3("Disease"),
                      selectInput('show_vars3', 'Disease Comparison:', choices=NULL),
                       plotlyOutput("main_plot2",  height = "600px"))
@@ -72,30 +74,30 @@ sidebarLayout(
                column(6, h3("Expression"),
                       plotOutput("main_plot",  height = "600px"))
              )#End Fluid Row
-    ),#End TabPanel
+    )#End TabPanel
 
-    tabPanel("Individual Study Data AT",
-             titlePanel("INflammation Disease EXpression Table"),
-             selectInput("protein", "Choose protein", NULL),
-             textOutput("protein"),
-             radioButtons('go', label= h3("Select Input or Datatable search"),
-                          choices = list("PullDown"=1, "DataTable"=2),
-                          selected=2),
-
-             fluidRow(checkboxGroupInput('show_vars1', 'Columns in Table to show:', choices=NULL, inline=TRUE)),
-             fluidRow(radioButtons("action_selectiontype", "Selection type",
-                                   choices = c("All"),
-                                   selected = "All", inline = TRUE)),
-             h3("Adjusted P Values"),
-
-             fluidRow(column (6, DT::dataTableOutput('x1'),  hr(),fluid=FALSE)
-             ),#End Fluid Row
-
-             fluidRow(
-               column(6, h3("Expression"),
-                      plotlyOutput("main_plot3",  height = "600px"))
-             )#End Fluid Row
-        ) # end tabPanel
+    # tabPanel("Individual Study Data AT",
+    #          titlePanel("INflammation Disease EXpression Table"),
+    #          selectInput("protein", "Choose protein", NULL),
+    #          textOutput("protein"),
+    #          radioButtons('go', label= h3("Select Input or Datatable search"),
+    #                       choices = list("PullDown"=1, "DataTable"=2),
+    #                       selected=2),
+    # 
+    #          fluidRow(checkboxGroupInput('show_vars1', 'Columns in Table to show:', choices=NULL, inline=TRUE)),
+    #          fluidRow(radioButtons("action_selectiontype", "Selection type",
+    #                                choices = c("All"),
+    #                                selected = "All", inline = TRUE)),
+    #          h3("Adjusted P Values"),
+    # 
+    #          fluidRow(column (6, DT::dataTableOutput('x1'),  hr(),fluid=FALSE)
+    #          ),#End Fluid Row
+    # 
+    #          fluidRow(
+    #            column(6, h3("Expression"),
+    #                   plotlyOutput("main_plot3",  height = "600px"))
+    #          )#End Fluid Row
+    #     ) # end tabPanel
   )#End Tabset Panel
 
   )#End UI
