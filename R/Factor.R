@@ -50,7 +50,7 @@ PlotFunction <- function(num=1, meta=Meta){
     g <- g+facet_wrap(~Disease,nrow = 3)
     #+ theme(legend.key.size = unit(3,"line")
      DF1 <- DF1[order(row.names(DF1)),]
-     DF1$Signif <- ifelse(DF1$pVal>0.001|is.na(DF1$pVal),"FALSE","TRUE")
+     DF1$Signif <- ifelse(DF1$pVal>0.001|is.na(DF1$pVal),"FALSE","TRUE") #FDR Cutoff
      DF1$Bold   <- ifelse(DF1$Signif, "bold", "plain")
      DF2 <- DF1[c(-1,-2,-3),]
      #Eliminate Matt AD analysis from figure
@@ -216,7 +216,8 @@ PlotFunction2 <- function(num=1, meta=Meta){
   DF1$Signif <- ifelse(DF1$pVal>0.001|is.na(DF1$pVal),"black", "red")
   DF1$SignHet <- ifelse(DF1$Hetp>0.001|is.na(DF1$Hetp),"FALSE", "TRUE")
   DF1$Bold   <- ifelse(DF1$Signif=="red", "bold", "plain")
-  DF2 <- DF1[c(-1,-2,-3),]
+  #DF2 <- DF1[c(-1,-2,-3),]
+  DF2=DF1
   #Eliminate Matt AD analysis from figure
   gg <- ggplot(DF2, aes(x=FC, y=label, size= -log10(pVal),color=Signif, shape=SignHet))+geom_point(  )+ggtitle(meta[num,1])
   
@@ -228,7 +229,7 @@ PlotFunction2 <- function(num=1, meta=Meta){
   gg <- gg + guides(color=FALSE)
   gg <- gg +  scale_colour_manual(values = c("blue", "red"))
   gg <- gg + theme(axis.text.y = element_text(face = DF2$Bold))
-  gg <- gg + geom_hline(yintercept = c(2.5, 6.5,8.5, 11.5, 13.5, 15.5, 16.5, 18.5, 21.5, 24.5, 25.5, 26.5 ), linetype="dashed", alpha = 0.2)
+  gg <- gg + geom_hline(yintercept = c(c(0.5, 2.5, 6.5,8.5, 11.5, 13.5, 15.5, 16.5, 18.5, 21.5, 24.5, 25.5, 26.5)+3 ), linetype="dashed", alpha = 0.2)
   gg 
   
   
